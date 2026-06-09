@@ -1,18 +1,22 @@
 import * as cheerio from "cheerio";
-import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { saveFile } from "./fileService.js";
+import fs from "fs";
 
 const file = "/data/books.json";
 
-async function scrapeBooks() {
-  try {
-    let books = [];
+let books = [];
 
+async function scrapeBooks() {
+  console.log("function run");
+  try {
     for (let i = 1; i < 51; i++) {
       const response = await fetch(
         `https://books.toscrape.com/catalogue/page-${i}.html`,
       );
+
+      console.log("request goes");
 
       if (!response.ok) {
         throw new Error("Failed to get data from internet");
@@ -22,14 +26,42 @@ async function scrapeBooks() {
 
       const $ = cheerio.load(html);
 
+      // console.log("html loaded")
+
       $(".product_pod").each(async (i, el) => {
         const linkBook = $(el).find("h3 a").attr("href").trim();
+
+        // console.log("fetching eacth page")
 
         const completeBookUrl = `https://books.toscrape.com/catalogue/${linkBook}`;
 
         await getBookDetail(completeBookUrl);
       });
     }
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    const timestamp = Date.now();
+    const fileName = `data/books_${timestamp}.json`;
+
+    const filePath = path.join(__dirname, "..", fileName);
+    console.log("file path is: ", filePath);
+
+    console.log("books scraped: ", books);
+
+    fs.writeFile(
+      filePath,
+      JSON.stringify(books, null, 2),
+      "utf8",
+      (err) => {
+        if (err) {
+          console.error("Error writing file:", err);
+          return;
+        }
+        console.log("File written successfully!");
+      },
+    );
 
     async function getBookDetail(link) {
       const res = await fetch(link);
@@ -64,18 +96,9 @@ async function scrapeBooks() {
         reviews: cleanReview,
       };
 
+      // console.log("scrape pages one by one: ", result)
+
       books.push(result);
-
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-
-      const timestamp = Date.now();
-      const fileName = `data/books_${timestamp}.json`;
-
-      const filePath = path.join(__dirname, "..", fileName);
-      console.log("file path is: ", filePath)
-
-      fs.writeFileSync(filePath, JSON.stringify(books, null, 2));
     }
   } catch (error) {
     console.error("An Error occurred: ", error);
