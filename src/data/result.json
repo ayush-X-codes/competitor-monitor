@@ -1,0 +1,48 @@
+[
+  {
+    "id": "The Regional Office Is Under Attack!",
+    "type": "updated",
+    "changes": {
+      "reviews": {
+        "from": 0,
+        "to": 5
+      }
+    }
+  },
+  {
+    "id": "The Star-Touched Queen",
+    "type": "updated",
+    "changes": {
+      "price": {
+        "from": 32.3,
+        "to": 46.02
+      },
+      "availability": {
+        "from": "In stock (12 available)",
+        "to": "In stock (14 available)"
+      }
+    }
+  },
+  {
+    "id": "The Book of Elon Musk",
+    "type": "added",
+    "data": {
+      "name": "The Book of Elon Musk",
+      "price": 35.83,
+      "rating": "Four",
+      "availability": "In stock (100 available)",
+      "reviews": 500
+    }
+  },
+  {
+    "id": "Jane Eyre",
+    "type": "deleted",
+    "data": {
+      "name": "Jane Eyre",
+      "price": 38.43,
+      "rating": "Five",
+      "availability": "In stock (1 available)",
+      "reviews": 0
+    }
+  }
+]

@@ -6,16 +6,14 @@ import fs from "fs";
 const file = "/data/books.json";
 
 let books = [];
+let count;
 
 async function scrapeBooks() {
-  console.log("function run");
   try {
     for (let i = 1; i < 51; i++) {
       const response = await fetch(
         `https://books.toscrape.com/catalogue/page-${i}.html`,
       );
-
-      console.log("request goes");
 
       if (!response.ok) {
         throw new Error("Failed to get data from internet");
@@ -25,12 +23,8 @@ async function scrapeBooks() {
 
       const $ = cheerio.load(html);
 
-      // console.log("html loaded")
-
       $(".product_pod").each(async (i, el) => {
         const linkBook = $(el).find("h3 a").attr("href").trim();
-
-        // console.log("fetching eacth page")
 
         const completeBookUrl = `https://books.toscrape.com/catalogue/${linkBook}`;
 
@@ -45,22 +39,14 @@ async function scrapeBooks() {
     const fileName = `data/books_${timestamp}.json`;
 
     const filePath = path.join(__dirname, "..", fileName);
-    console.log("file path is: ", filePath);
 
-    console.log("books scraped: ", books);
-
-    fs.writeFile(
-      filePath,
-      JSON.stringify(books, null, 2),
-      "utf8",
-      (err) => {
-        if (err) {
-          console.error("Error writing file:", err);
-          return;
-        }
-        console.log("File written successfully!");
-      },
-    );
+    fs.writeFile(filePath, JSON.stringify(books, null, 2), "utf8", (err) => {
+      if (err) {
+        console.error("Error writing file:", err);
+        return;
+      }
+      console.log("File written successfully!");
+    });
 
     async function getBookDetail(link) {
       const res = await fetch(link);
@@ -94,8 +80,6 @@ async function scrapeBooks() {
         availability: availability,
         reviews: cleanReview,
       };
-
-      // console.log("scrape pages one by one: ", result)
 
       books.push(result);
     }

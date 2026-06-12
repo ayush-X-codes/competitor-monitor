@@ -998,7 +998,7 @@
     "price": 51.36,
     "rating": "Five",
     "availability": "In stock (15 available)",
-    "reviews": 0
+    "reviews": 5
   },
   {
     "name": "The Project",
@@ -6853,10 +6853,10 @@
     "reviews": 0
   },
   {
-    "name": "Jane Eyre",
-    "price": 38.43,
-    "rating": "Five",
-    "availability": "In stock (1 available)",
-    "reviews": 0
+    "name": "The Book of Elon Musk",
+    "price": 35.83,
+    "rating": "Four",
+    "availability": "In stock (100 available)",
+    "reviews": 500
   }
 ]

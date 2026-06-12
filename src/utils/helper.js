@@ -1,15 +1,16 @@
 import path, { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import fs from "fs/promises";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const fullPath = path.join(__dirname, "..", "/data");
+const direPath = path.join(__dirname, "..", "/data");
 
-async function findOldAndNewFile(direPath) {
+async function findOldAndNewFile() {
+
   try {
     const files = await fs.readdir(direPath);
-    console.log("Files are: ", files);
 
     if (files.length === 0) {
       console.error("Directory is completely empty");
@@ -30,8 +31,6 @@ async function findOldAndNewFile(direPath) {
       }),
     );
 
-    console.log("file metadata is: ", fileState);
-
     const onlyFile = fileState.filter((item) => item.isFile);
 
     if (onlyFile.length === 0) {
@@ -40,13 +39,11 @@ async function findOldAndNewFile(direPath) {
     }
 
     const sortedFiles = onlyFile.sort((a, b) => a.mtime - b.mtime);
-    console.log("sorted files: ", sortedFiles);
 
     const oldFile = onlyFile[onlyFile.length - 2];
     const newFile = onlyFile[onlyFile.length - 1];
 
-    console.log("Old file is: ", oldFile);
-    console.log("New file is: ", newFile);
+    console.log("sorted files  are: ", sortedFiles)
 
     return {
       oldFile,
@@ -57,5 +54,4 @@ async function findOldAndNewFile(direPath) {
   }
 }
 
-
-export {findOldAndNewFile}
+export { findOldAndNewFile };

@@ -1,57 +1,59 @@
-import fs from "fs/promises";
+"use strict";
+
 import { findOldAndNewFile } from "../utils/helper.js";
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
 
 async function monitor() {
-  const files = await findOldAndNewFile();
+  const file = await findOldAndNewFile();
 
-  const oldFile = files.oldFile;
-  const newFile = files.newFile;
+  const newFile = file.newFile.path;
+  const oldFile = file.oldFile.path;
 
-  const dataOld = await fs.readFile(oldFile.path);
-  const dataNew = await fs.readFile(newFile.path);
+  const newFileRead = await fs.readFile(newFile);
+  const oldFileRead = await fs.readFile(oldFile);
 
-  const oldFileData = JSON.parse(dataOld);
-  const newFileData = JSON.parse(dataNew);
+  const newFileData = JSON.parse(newFileRead);
+  const oldFileData = JSON.parse(oldFileRead);
 
-  function findChanges(oldFile, newFile) {
+  function findChanges(newFile, oldFile) {
     let changes = [];
 
-    // 1. Create a lookup map of the old array for O(1) access
     const oldMap = new Map(oldFile.map((item) => [item.name, item]));
-    console.log("Old map is: ", oldMap);
 
-    // 2. Loop through the new array to find updates and additions
     newFile.forEach((newItem) => {
-      const oldItem = oldMap.get(newFile.name);
-      // console.log("old item is: ", oldItem)
+      const oldItem = oldMap.get(newItem.name);
 
       if (!oldItem) {
         changes.push({
+          id: newItem.name,
           type: "added",
-          name: newItem.name,
-          price: newItem.price,
-          availability: newItem.availability,
-          review: newItem.reviews,
+          data: newItem,
         });
       } else {
-        let itemChanges = {};
+        const itemChanges = {};
 
         if (oldItem.name !== newItem.name)
           itemChanges.name = { from: oldItem.name, to: newItem.name };
         if (oldItem.price !== newItem.price)
           itemChanges.price = { from: oldItem.price, to: newItem.price };
+        if (oldItem.rating !== newItem.rating)
+          itemChanges.rating = { from: oldItem.rating, to: newItem.rating };
         if (oldItem.availability !== newItem.availability)
           itemChanges.availability = {
             from: oldItem.availability,
             to: newItem.availability,
           };
-        if (oldItem.review !== newItem.review)
-          itemChanges.review = { from: oldItem.review, to: newItem.review };
+        if (oldItem.reviews !== newItem.reviews)
+          itemChanges.reviews = {
+            from: oldItem.reviews,
+            to: newItem.reviews,
+          };
 
-        // If the itemChanges object has keys, something changed
         if (Object.keys(itemChanges).length > 0) {
           changes.push({
-            id: newItem.id,
+            id: newItem.name,
             type: "updated",
             changes: itemChanges,
           });
@@ -59,21 +61,25 @@ async function monitor() {
       }
     });
 
-
-    // 3. Optional: Check for deleted items
     const newIds = new Set(newFile.map((item) => item.name));
-    oldFile.forEach((oldItem) => {
-      if (!newIds.has(oldItem.name)) {
-        changes.push({ id: oldItem.name, type: "deleted", data: oldItem });
+    oldFile.forEach((itemOld) => {
+      if (!newIds.has(itemOld.name)) {
+        changes.push({
+          id: itemOld.name,
+          type: "deleted",
+          data: itemOld,
+        });
       }
     });
 
-    console.log("changes are: ", changes)
-
     return changes;
   }
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
 
-  findChanges(oldFileData, newFileData);
+  const resultPath = path.join(__dirname, "..", "/data/result.json");
+  const data = findChanges(newFileData, oldFileData);
+  await fs.writeFile(resultPath, JSON.stringify(data, null, 2));
 }
 
-monitor();
+export { monitor };
